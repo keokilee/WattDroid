@@ -1,10 +1,14 @@
 package edu.hawaii.wattdroid;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.List;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
+import edu.hawaii.wattdroid.utils.XmlSourceListHandler;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,6 +30,7 @@ import android.view.View;
  * 
  * @author Remy Baumgarten
  * @author Kevin Chiogioji
+ * @author George Lee
  * 
  */
 public class WattDroid extends ListActivity {
@@ -53,7 +58,7 @@ public class WattDroid extends ListActivity {
       Toast
           .makeText(getApplicationContext(), prefs.getString("text", "<unset>"), Toast.LENGTH_LONG)
           .show();
-      if (text.compareTo("<undefined>") == 0) {
+      if (text.equals("<undefined>")) {
         Toast.makeText(getApplicationContext(), "Please set a URL in the Preferences",
             Toast.LENGTH_SHORT).show();
         Intent prefActivity = new Intent(this, EditPreferences.class);
@@ -64,24 +69,27 @@ public class WattDroid extends ListActivity {
 
       /* Get a SAXParser from the SAXPArserFactory. */
       SAXParserFactory spf = SAXParserFactory.newInstance();
-      SAXParser sp = spf.newSAXParser();
+      SAXParser parser = spf.newSAXParser();
 
-      /* Get the XMLReader of the SAXParser we created. */
-      XMLReader xr = sp.getXMLReader();
-      /* Create a new ContentHandler and apply it to the XML-Reader */
-      ExampleHandler myExampleHandler = new ExampleHandler();
-      xr.setContentHandler(myExampleHandler);
+      /* Setup the XML reader. */
+      XMLReader xmlReader = parser.getXMLReader();
+      XmlSourceListHandler sourceHandler = new XmlSourceListHandler();
+      xmlReader.setContentHandler(sourceHandler);
 
       /* Parse the xml-data from our URL. */
-      xr.parse(new InputSource(url.openStream()));
+      xmlReader.parse(new InputSource(url.openStream()));
 
-      /* Our ExampleHandler now provides the parsed data to us. */
-      ParsedExampleDataSet parsedExampleDataSet = myExampleHandler.getParsedData();
+      /*Grab the sources from the parsed data.*/
+      List<Dictionary<String, String>> sourceList = sourceHandler.getSourceList();
 
-      /* Set the result to be displayed in our GUI. */
-      String[] sources = parsedExampleDataSet.getAllSources();
+      //Need to iterate over the sources to just get the titles.
+      List<String> names = new ArrayList<String>();
+      for (Dictionary<String, String> source : sourceList) {
+        names.add(source.get("Name"));
+      }
+      
       Log.d("wattdroid", "I just placed sources into an array");
-      setListAdapter(new ArrayAdapter<String>(this, R.layout.item, sources));
+      setListAdapter(new ArrayAdapter<String>(this, R.layout.item, names));
 
       /* Sets up listener for action upon source selection */
       ListView lv = getListView();
