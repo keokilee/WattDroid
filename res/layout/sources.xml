@@ -35,6 +35,20 @@
 			/>	
 		
 		</TableRow>
+        <TableRow>
+      <TextView
+        android:layout_width="wrap_content"
+        android:text="Description: "
+        android:textColor="#FFFFFF"
+        android:textSize="18px"
+      />
+      <TextView
+        android:id="@+id/description"
+        android:layout_width="wrap_content"
+        android:textColor="#FFFFFF"
+        android:textSize="18px"
+      />  
+    </TableRow>   
 		<TableRow>
 			<TextView
 				android:layout_width="wrap_content"

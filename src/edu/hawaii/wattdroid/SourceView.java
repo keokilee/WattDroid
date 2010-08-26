@@ -1,196 +1,109 @@
 package edu.hawaii.wattdroid;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
-import android.widget.TextView;
+import edu.hawaii.wattdroid.utils.XmlSourceDetailHandler;
 import android.app.Activity;
-import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
-import android.view.View;
-import android.widget.Toast;
+import android.widget.TextView;
 
 /**
- * Sourceview - displays sources in a list context. Uses the list adaptor and presents list of XML
- * sources from a wattdepot server.
+ * Displays detailed information about a source.
  * 
+ * @author George Lee
+ *
  */
 public class SourceView extends Activity {
-
+  
+  private Bundle source = new Bundle();
+  private Bundle sourceProperties = new Bundle();
+  
   /**
-   * Debug tag for log writing.
+   * Called when the activity is started.
    */
-  private final String MY_DEBUG_TAG = "wattdroid";
-  private String source = null;
-  // private Integer delay = null;
-  private TextView reading;
-  private TextView name;
-  private TextView location;
-  private TextView meter;
-  private String coords;
-  private Button map;
-
-  /** Need handler for call-backs to the UI thread **/
-  private RefreshHandler mRedrawHandler = new RefreshHandler();
-
-  /**
-   * Inner class of Sourceview thats purpose is to handle messages from threads and act upon them,
-   * ie calling updateUI
-   */
-  class RefreshHandler extends Handler {
-    /**
-     * handleMessage - This is called in order to update the UI in a thread.
-     * 
-     * @param msg - an empty message that triggers the update
-     */
-    @Override
-    public void handleMessage(Message msg) {
-      SourceView.this.updateUI();
-    }
-
-    /**
-     * Delays refresh for the param amount of time in ms.
-     * 
-     * @param delayMillis - num of ms to delay
-     */
-    public void sleep(long delayMillis) {
-      this.removeMessages(0);
-      if (!isFinishing()) {
-        sendMessageDelayed(obtainMessage(0), delayMillis);
-      }
-    }
-  };
-
-  /**
-   * updateUI - The background Thread that processes new XML information to display in the textview.
-   * 
-   * @TODO - duplicate code, break it up
-   */
-  private void updateUI() {
-    // mRedrawHandler.sleep(Integer.getInteger(delay) * 1000);
-    mRedrawHandler.sleep(10000);
-    try {
-      /* Create a REST locations we want to load xml-data from. */
-      URL summaryURL = new URL("http://server.wattdepot.org:8186/wattdepot/sources/" + source);
-
-      ParsedExampleDataSet summaryData = null;
-      /* Loop through both urls to get information and append to displayStats */
-
-      /* Get a SAXParser from the SAXPArserFactory. */
-      SAXParserFactory saxSummaryParser = SAXParserFactory.newInstance();
-      SAXParser sp1 = saxSummaryParser.newSAXParser();
-
-      /* Get the XMLReader of the SAXParser we created. */
-      XMLReader xr = sp1.getXMLReader();
-
-      /* Create a new ContentHandler and apply it to the XML-Reader */
-      ExampleHandler myExampleHandler = new ExampleHandler();
-      xr.setContentHandler(myExampleHandler);
-
-      /* Parse the xml-data from our URL. */
-      xr.parse(new InputSource(summaryURL.openStream()));
-
-      /* Our ExampleHandler now provides the parsed data to us. */
-      summaryData = myExampleHandler.getParsedData();
-
-      /* Set the result to be displayed in our GUI. */
-      if (summaryData.getName().toString() != null) {
-        name.setText(summaryData.getName().toString());
-      }
-      if (summaryData.getLocation().toString() != null) {
-        location.setText(summaryData.getLocation().toString());
-      }
-      if (summaryData.getDescription().toString() != null) {
-        meter.setText(summaryData.getDescription().toString());
-      }
-      /* Set Coordinates */
-      if (summaryData.getCoords().toString() != null) {
-        this.coords = summaryData.getCoords().toString();
-      }
-    }
-    catch (Exception e) {
-      Log.e(MY_DEBUG_TAG, "wattdroid", e);
-    }
-
-    try {
-      /* Create a REST locations we want to load xml-data from. */
-      URL powerURL =
-          new URL("http://server.wattdepot.org:8186/wattdepot/sources/" + source
-              + "/sensordata/latest" + "/summary");
-      ParsedExampleDataSet parsedExampleDataSet = null;
-      /* Loop through both urls to get information and append to displayStats */
-
-      /* Get a SAXParser from the SAXPArserFactory. */
-      SAXParserFactory spf = SAXParserFactory.newInstance();
-      SAXParser sp = spf.newSAXParser();
-
-      /* Get the XMLReader of the SAXParser we created. */
-      XMLReader xr = sp.getXMLReader();
-
-      /* Create a new ContentHandler and apply it to the XML-Reader */
-      ExampleHandler myExampleHandler = new ExampleHandler();
-      xr.setContentHandler(myExampleHandler);
-
-      /* Parse the xml-data from our URL. */
-      xr.parse(new InputSource(powerURL.openStream()));
-
-      /* Our ExampleHandler now provides the parsed data to us. */
-      parsedExampleDataSet = myExampleHandler.getParsedData();
-
-      /* Set the result to be displayed in our GUI. */
-      if (parsedExampleDataSet.getTotalSensorData().toString() != null) {
-        reading.setText(parsedExampleDataSet.getTotalSensorData() + " watts");
-      }
-    }
-    catch (Exception e) {
-      Log.e(MY_DEBUG_TAG, "wattdroid", e);
-    }
-  }
-
   @Override
-  public void onCreate(Bundle icicle) {
-    super.onCreate(icicle);
+  public void onCreate(Bundle bundle) {
+    super.onCreate(bundle);
     setContentView(R.layout.sources);
-    this.reading = (TextView) this.findViewById(R.id.energyreading);
-    this.name = (TextView) this.findViewById(R.id.sourcename);
-    this.location = (TextView) this.findViewById(R.id.location);
-    this.meter = (TextView) this.findViewById(R.id.meterinfo);
-    this.map = (Button) this.findViewById(R.id.map);
 
+    //Retrieve the passed in source and load the extra data if available.
     Bundle extras = getIntent().getExtras();
     if (extras != null) {
-      source = extras.getString("source");
-      // delay = extras.getInt("delay");
-    }
-
-    /*
-     * Geo Location URLS are not available on emulators by default to enable create a new AVD with
-     * the commmand: android create avd -n my_androidMAPS -t 3
-     */
-    map.setOnClickListener(new View.OnClickListener() {
-      public void onClick(View v) {
-        if (coords.equals("0,0,0")) {
-          Toast.makeText(getBaseContext(),
-              "Server does not contain data for this location (0,0,0)", Toast.LENGTH_LONG).show();
-        }
-        else {
-          String uri = "geo:" + coords;
-          startActivity(new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri)));
-        }
+      this.source = (Bundle)extras.getBundle("source");
+      try {
+        this.loadDetails(new URL(this.source.getString("Href")));
       }
-    });
-    updateUI();
+      catch (MalformedURLException e) {
+        // If the URL is malformed, log and continue.
+        Log.w("wattdroid", "Encountered bad url " + this.source.get("Href"));
+      }
+      catch (ParserConfigurationException e) {
+        //Shouldn't happen, but log it anyway.
+        Log.e("wattdroid", "Misconfigured parser.");
+      }
+      catch (SAXException e) {
+        Log.w("wattdroid", "Received invalid XML");
+      }
+      catch (IOException e) {
+        Log.w("wattdroid", "Lost connection while getting data.");
+      }
+    }
   }
 
+  /**
+   * Loads the detailed source information from the source url.
+   * 
+   * @param url The url path to load.
+   * @throws SAXException if there is an error while parsing.
+   * @throws ParserConfigurationException if the parser was misconfigured.
+   * @throws IOException if we lose connection while getting data.
+   */
+  private void loadDetails(URL url) throws ParserConfigurationException, SAXException, IOException {
+    SAXParserFactory factory = SAXParserFactory.newInstance();
+    SAXParser parser = factory.newSAXParser();
+
+    // Set up the XML reader.
+    XMLReader reader = parser.getXMLReader();
+    XmlSourceDetailHandler handler = new XmlSourceDetailHandler(this.source);
+    reader.setContentHandler(handler);
+
+    reader.parse(new InputSource(url.openStream()));
+    
+    //Retrieve parsed data.
+    this.source = handler.getSource();
+    this.sourceProperties = handler.getSourceProperties();
+    
+    //Update the view.
+    updateView();
+  }
+
+  /**
+   * Updates the view based on the data in the source.
+   */
+  private void updateView() {
+    TextView nameView = (TextView)this.findViewById(R.id.sourcename);
+    TextView locationView = (TextView)this.findViewById(R.id.location);
+    TextView descriptionView = (TextView)this.findViewById(R.id.description);
+    Button map = (Button) this.findViewById(R.id.map);
+    
+    nameView.setText(this.source.getString("Name"));
+    locationView.setText(this.source.getString("Coordinates"));
+    descriptionView.setText(this.source.getString("Description"));
+  }
+  
   @Override
   public void onStop() {
     super.onStop();
   }
 }
+
+

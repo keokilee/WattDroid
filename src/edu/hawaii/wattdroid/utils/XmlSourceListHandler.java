@@ -3,6 +3,7 @@ package edu.hawaii.wattdroid.utils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+import android.os.Bundle;
 import android.util.Log;
 import java.util.ArrayList;
 import java.util.Dictionary;
@@ -17,21 +18,14 @@ import java.util.List;
  */
 public class XmlSourceListHandler extends DefaultHandler {
   /**The list of sources.*/
-  private List<Dictionary<String, String>> sourceList = new ArrayList<Dictionary<String, String>>();
-
-  /**
-   * Default constructor for the handler.  Simply calls the super constructor.
-   */
-  public XmlSourceListHandler() {
-    super();
-  }
+  private List<Bundle> sourceList = new ArrayList<Bundle>();
 
   /**
    * Gets the source list.
    * 
    * @return List of sources in Dictionary format.
    */
-  public List<Dictionary<String, String>> getSourceList() {
+  public List<Bundle> getSourceList() {
     return this.sourceList;
   }
   
@@ -58,11 +52,11 @@ public class XmlSourceListHandler extends DefaultHandler {
     if (localName.equals("SourceRef")) {
       //We encountered a new source.
       Log.d("wattdroid", "Found new source.");
-      Hashtable<String, String> source = new Hashtable<String, String>();
+      Bundle source = new Bundle();
       
       //Need to iterate over attributes and add them to the list.
       for (int i = 0; i < attrs.getLength(); i++) {
-        source.put(attrs.getLocalName(i), attrs.getValue(i));
+        source.putString(attrs.getLocalName(i), attrs.getValue(i));
       }
       
       this.sourceList.add(source);

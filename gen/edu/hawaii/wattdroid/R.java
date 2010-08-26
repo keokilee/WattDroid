@@ -30,12 +30,13 @@ public final class R {
         public static final int about_button=0x7f080002;
         public static final int about_content=0x7f080000;
         public static final int continue_button=0x7f080001;
+        public static final int description=0x7f080008;
         public static final int energyreading=0x7f080006;
         public static final int exit_button=0x7f080003;
         public static final int listtext=0x7f080005;
-        public static final int location=0x7f080008;
-        public static final int map=0x7f08000a;
-        public static final int meterinfo=0x7f080009;
+        public static final int location=0x7f080009;
+        public static final int map=0x7f08000b;
+        public static final int meterinfo=0x7f08000a;
         public static final int sourcename=0x7f080007;
     }
     public static final class layout {
