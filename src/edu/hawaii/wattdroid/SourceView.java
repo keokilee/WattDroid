@@ -11,8 +11,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import edu.hawaii.wattdroid.utils.XmlSourceDetailHandler;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -26,6 +29,7 @@ public class SourceView extends Activity {
   
   private Bundle source = new Bundle();
   private Bundle sourceProperties = new Bundle();
+  protected static final String INVALID_COORDINATES = "0,0,0";
   
   /**
    * Called when the activity is started.
@@ -38,7 +42,7 @@ public class SourceView extends Activity {
     //Retrieve the passed in source and load the extra data if available.
     Bundle extras = getIntent().getExtras();
     if (extras != null) {
-      this.source = (Bundle)extras.getBundle("source");
+      this.source = (Bundle) extras.getBundle("source");
       try {
         this.loadDetails(new URL(this.source.getString("Href")));
       }
@@ -96,8 +100,19 @@ public class SourceView extends Activity {
     Button map = (Button) this.findViewById(R.id.map);
     
     nameView.setText(this.source.getString("Name"));
-    locationView.setText(this.source.getString("Coordinates"));
+    locationView.setText(this.source.getString("Location"));
     descriptionView.setText(this.source.getString("Description"));
+    
+    //Check if we have valid coordinates before setting the click handler.
+    if (!this.source.getString("Coordinates").equals(INVALID_COORDINATES)) {
+      map.setOnClickListener(new OnClickListener() {
+        public void onClick(View view) {
+          Intent mapView = new Intent(view.getContext(), SourceMapView.class);
+          mapView.putExtra("source", source);
+          startActivity(mapView);
+        }
+      });
+    }
   }
   
   @Override

@@ -6,8 +6,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import android.os.Bundle;
 import android.util.Log;
 import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.List;
 
 /**

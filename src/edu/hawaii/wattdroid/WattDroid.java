@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -22,7 +21,6 @@ import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView; //import android.widget.Toast;
 import android.widget.Toast; //import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 import android.view.Menu;
@@ -44,7 +42,7 @@ public class WattDroid extends ListActivity {
   private final String MY_DEBUG_TAG = "wattdroid";
   private static final int EDIT_ID = Menu.FIRST + 2;
   private String text = null;
-  private String delay = null;
+  //private String delay = null;
   private List<Bundle> sourceList = new ArrayList<Bundle>();
 
   /** Called when the activity is first created. */
@@ -54,7 +52,7 @@ public class WattDroid extends ListActivity {
     setContentView(R.layout.main);
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
     text = prefs.getString("text", "<undefined>");
-    delay = prefs.getString("delay", "30");
+    //delay = prefs.getString("delay", "30");
 
     try {
       /* Create a URL we want to load some xml-data from. */
